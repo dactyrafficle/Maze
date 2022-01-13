@@ -227,7 +227,9 @@ Maze.prototype.MAKE_WALLS = function() {
   this.edges['300-50'].WALLIFY();
   this.edges['300-150'].WALLIFY();
   this.edges['300-250'].WALLIFY();
-
+  
+ 
+  
   this.edges['400-150'].WALLIFY();
   this.edges['400-250'].WALLIFY();
   
@@ -276,21 +278,39 @@ Maze.prototype.GET_CELL_NEIGHBORS = function() {
 }  
 
 
+/*
+
+  THIS METHOD WILL LOOK AT THE CURRENT CELLS NEIGHBORS
+  IT WILL PICK THE NEXT CELL, x
+  IT WILL THEN DO 2 THINGS :
+    1. x.STATE.NEXT = true;
+    2. this.NEXT = x;
+ 
+*/
 Maze.prototype.ANALYZE_NEIGHBORS = function() {
 
   if (this.CURRENT.STATE.END) {
     return;
   }
-  
+/*
+  if (this.CURRENT.STATE.END) {
+    console.log('.........................');
+    console.log(' > FRAME COUNT : ' + this.ANIMATION.FRAME_COUNT);
+    console.log(this.ANIMATION.FRAME_COUNT + ' : @DONE');
+    return;
+  }
+*/  
   // THE OPTIONS
   let arr = ['NORTH', 'EAST', 'SOUTH', 'WEST'];
   
   // IF THERE ARE 0 OR 1 MOVES REMAINING, THE CELL DIES
   this.n_possible_moves = 0;
   this.possible_moves = [];
+  this.n_unvisited_cells = 0;
+  this.unvisited_cells = [];
   
   console.log('.........................');
-  console.log('FRAME COUNT : ' + this.ANIMATION.FRAME_COUNT);
+  console.log(' > FRAME COUNT : ' + this.ANIMATION.FRAME_COUNT);
 
   // PART ONE : SEE WHAT CELLS ARE PHYSICALLY POSSIBLE (NO WALLS)
 
@@ -315,34 +335,43 @@ Maze.prototype.ANALYZE_NEIGHBORS = function() {
       continue;
     }
 
-    // IF WE GET HERE, THE OBJ IS A CELL, WITH NO WALL, AND NOT A DEAD END
+    // SO WE CAN MOVE HERE, IF WE WANT
     this.n_possible_moves++;
     this.possible_moves.push(cell);
+    
+    // CHECK IF IT IS UNVISITED (ORANGE)
+    if (!cell.STATE.VISITED) {
+      this.n_unvisited_cells++;
+      this.unvisited_cells.push(cell);
+    }
 
   }; // CLOSING FOR LOOP FOR CELL
   
-
+  // PRINT SOME RESULTS
   console.log(' > POSSIBLE MOVES : ' + this.n_possible_moves);
+  console.log(' > UNVISITED CELLS : ' + this.n_unvisited_cells);
+  
 
-  
-  // now we know how many possible moves there are, we can start making some decisions
-  
-  // console.log(this.possible_moves);
+  // IF THERE ARE 0 POSSIBLE MOVES, WE STOP
   if (this.n_possible_moves === 0) {
     console.log('NOWHERE TO GO!');
   }
     
-  // IF ONLY 1 POSSIBLE MOVE, C'EST CLAIR
+  // IF THERE IS ONLY 1 POSSIBLE MOVE, WE GO THERE. PERIOD. AND KILL THE CURRENT CELL.
   if (this.n_possible_moves === 1) {
 
+    console.log(this.ANIMATION.FRAME_COUNT + ' : @1.0 : ONLY ONE CHOICE');
+
+    // NO NEED TO CHECK FOR VISITED UNVISITED
     this.possible_moves[0].STATE.NEXT = true;
     this.NEXT = this.possible_moves[0];
     
-    this.CURRENT.STATE.DEAD = true; // actually means the current CURRENT is now dead
+    // KILL THE CURRENT CELL
+    this.CURRENT.STATE.DEAD = true;
   } // CLOSING 1 POSSIBLE MOVE
   
 
-  // IF THERE ARE 2 POSSIBLE MOVES, WE MUST DECIDE
+  // IF THERE ARE 2 POSSIBLE MOVES, WE MUST DECIDE WHERE TO GO
   
   if (this.n_possible_moves === 2) {
   
@@ -352,41 +381,105 @@ Maze.prototype.ANALYZE_NEIGHBORS = function() {
     // 2.0 : BOTH UNVISITED : CHOOSE BY RPOS (N-E-S-W)
     // 2.1 : VISITED UNVISITED : PICK UNVISITED
     // 2.2 : BOTH VISITED : KILL CURRENT AND RETURN THE WAY WE CAME !
-    
+
     // 2.0 : BOTH UNVISITED
+
     if (!cell0.STATE.VISITED && !cell1.STATE.VISITED) {
-      
+      console.log(this.ANIMATION.FRAME_COUNT + ' : @2.0 : BOTH UNVISITED');
       cell0.STATE.NEXT = true;
       this.NEXT = cell0;
     }
     
     // 2.1 : VISITED UNVISITED
+
     if (cell0.STATE.VISITED && !cell1.STATE.VISITED) {
+      console.log(this.ANIMATION.FRAME_COUNT + ' : @2.1 : 1 VISITED; 1 UNVISITED');
       cell1.STATE.NEXT = true;
       this.NEXT = cell1;
-    } else {
+    }
+    if (!cell0.STATE.VISITED && cell1.STATE.VISITED) {
+      console.log(this.ANIMATION.FRAME_COUNT + ' : @2.1 : 1 VISITED; 1 UNVISITED');
       cell0.STATE.NEXT = true;
       this.NEXT = cell0;
     }
 
     // 2.2 : BOTH VISITED : KILL CURRENT AND RETURN THE WAY WE CAME !
+
     if (cell0.STATE.VISITED && cell1.STATE.VISITED) {
+      console.log(this.ANIMATION.FRAME_COUNT + ' : @2.2 : BOTH POSSIBILITIES ALREADY VISITED');
+      console.log('KILL THE CURRENT CELL. RETURN THE WAY WE CAME');
       this.CURRENT.STATE.DEAD = true;
       this.NEXT = this.PREVIOUS;  
     }
     
   } // CLOSING 2 POSSIBLE MOVES
-  
-  
+
+
   if (this.n_possible_moves === 3) {
     
-    // 3.0 : all 3 are free
-    // 3.1 : 2 are free, 1 is not
-    // 3.2 : 1 is free, 2 are not 
-    // 3.3 : 0 are free, 3 are not
+    // 3.0 : ALL 3 UNVISITED
+    // 3.1 : 2 UNVISITED (orange) AND 1 VISITED (blue)
+    // 3.2 : 1 UNVISITED (orange) AND 2 VISITED (blue)
+    // 3.3 : ALL 3 VISITED : KILL CURRENT CELL : RETURN THE WAY WE CAME !
     
-    this.possible_moves[0].STATE.NEXT = true;
-    this.NEXT = this.possible_moves[0];
+    // 3.0 : ALL 3 ARE UNVISITED (ORANGE)
+    
+    if (this.n_unvisited_cells === 3) {
+      console.log(this.ANIMATION.FRAME_COUNT + ' : @3.0 : ALL 3 UNVISITED');
+      this.unvisited_cells[0].STATE.NEXT = true;
+      this.NEXT =  this.unvisited_cells[0]; 
+    }
+    
+    // 3.1 : 2 UNVISITED (ORANGE); 1 VISITED (BLUE)
+    
+    if (this.n_unvisited_cells === 2) {
+      console.log(this.ANIMATION.FRAME_COUNT + ' : @3.1 : 2 UNVISITED; 1 VISITED');
+      this.unvisited_cells[0].STATE.NEXT = true;
+      this.NEXT =  this.unvisited_cells[0];  
+    }
+    
+    
+    // 3.2 : 1 UNVISITED (ORANGE); 2 VISITED (BLUE)
+    
+    if (this.n_unvisited_cells === 1) {
+      console.log(this.ANIMATION.FRAME_COUNT + ' : @3.2 : 1 UNVISITED; 2 VISITED');
+      this.unvisited_cells[0].STATE.NEXT = true;
+      this.NEXT =  this.unvisited_cells[0];   
+    }
+    
+    // 3.3 : ALL 3 ARE VISITED (BLUE) : KILL CURRENT AND RETURN THE WAY WE CAME !
+    
+    if (this.n_unvisited_cells === 0) {
+      console.log(this.ANIMATION.FRAME_COUNT + ' : @3.3 : ALL 3 ALREADY VISITED');
+      console.log('KILL THE CURRENT CELL. RETURN THE WAY WE CAME');
+      this.CURRENT.STATE.DEAD = true;
+      this.NEXT = this.PREVIOUS; 
+    } 
+    
+  } // CLOSING 3 POSSIBILITIES IF STATEMENT
+
+
+  // SO FAR SO GOOD
+
+  if (this.n_possible_moves === 4) {
+    
+    // 4.0 : ALL 4 UNVISITED
+    // 4.1 : 3 UNVISITED (orange) AND 1 VISITED (blue)
+    // 4.1 : 2 UNVISITED (orange) AND 2 VISITED (blue)
+    // 4.1 : 1 UNVISITED (orange) AND 3 VISITED (blue)
+    // 4.2 : ALL 4 VISITED : KILL CURRENT CELL : RETURN THE WAY WE CAME !
+  
+    if (this.n_unvisited_cells === 0) {
+      console.log(this.ANIMATION.FRAME_COUNT + ' : @4.2 : ALL 4 ALREADY VISITED');
+      console.log('KILL THE CURRENT CELL. RETURN THE WAY WE CAME');
+      this.CURRENT.STATE.DEAD = true;
+      this.NEXT = this.PREVIOUS; 
+    } else {
+      console.log(this.ANIMATION.FRAME_COUNT + ' : @4.1 : UNVISITED VISITED');
+      this.unvisited_cells[0].STATE.NEXT = true;
+      this.NEXT =  this.unvisited_cells[0]; 
+    }
+  
   }
   
 }
@@ -522,19 +615,10 @@ Maze.prototype.SHOW_ANALYSIS = function() {
       div.style.backgroundColor = '#3c35';
     } 
     
-    
     this.INFOBOX['PROSPECTIVE_' + arr[i]].appendChild(div);
   }
 }
 
-
-Maze.prototype.DETERMINE_NEXT_ACTIVE_CELL = function() {
-  
-  if (this.CURRENT.STATE.END) {
-    return;
-  }
-
-}
 
 Maze.prototype.MOVE_TO_NEW_ACTIVE_CELL = function() {
 
@@ -546,11 +630,9 @@ Maze.prototype.MOVE_TO_NEW_ACTIVE_CELL = function() {
   // current -> previous
   // next -> current
   
-  // current -> previous
-  
+
   // THE OLD PREVIOUS IS NO LONGER PREVIOUS; NOW WE CAN FORGET ABOUT IT
   if (this.PREVIOUS === null) {
-    
   } else {
     this.PREVIOUS.STATE.PREVIOUS = false;
   }
@@ -563,7 +645,13 @@ Maze.prototype.MOVE_TO_NEW_ACTIVE_CELL = function() {
 
   this.CURRENT.DEACTIVATE();
   this.CURRENT = this.NEXT;
-
   this.CURRENT.ACTIVATE();
+  
+  if (this.CURRENT.STATE.END) {
+    console.log('.........................');
+    console.log(' > FRAME COUNT : ' + this.ANIMATION.FRAME_COUNT);
+    console.log(this.ANIMATION.FRAME_COUNT + ' : @DONE');
+    return;
+  }
 
 }

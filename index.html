@@ -124,22 +124,16 @@ window.onload = function() {
   infobox_container = document.getElementById('infobox_container');
   infobox_container.appendChild(maze.INITIALIZE_INFOBOX());
   
-  maze.ANALYZE_NEIGHBORS();
-  maze.DETERMINE_NEXT_ACTIVE_CELL();
+  maze.ANALYZE_NEIGHBORS(); // if done, returns nothing
   maze.SHOW_ANALYSIS();
-  
   maze.REDRAW();
-  
 
   // STEP INTO
   step_into_button = document.getElementById('step_into_button');
   step_into_button.addEventListener('click', function() {
     
     maze.MOVE_TO_NEW_ACTIVE_CELL();
-    // maze.REDRAW();
-    
-    maze.ANALYZE_NEIGHBORS();
-    maze.DETERMINE_NEXT_ACTIVE_CELL();
+    maze.ANALYZE_NEIGHBORS(); // if done, returns nothing
     maze.SHOW_ANALYSIS();
     maze.REDRAW();
   });
