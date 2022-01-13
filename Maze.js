@@ -77,7 +77,7 @@ Maze.prototype.REDRAW = function() {
   Object.keys(this.cells).forEach(function(a) {
 
     let cell = this.cells[a];
-    this.b.ctx.fillStyle = '#fc0a';
+    this.b.ctx.fillStyle = '#5c55'; // '#fc0a';
     
 
     
@@ -91,7 +91,11 @@ Maze.prototype.REDRAW = function() {
     }
     
     if (cell.STATE.DEAD) {
-      this.b.ctx.fillStyle = '#dddd';
+      this.b.ctx.fillStyle = '#ddd';
+    }
+    
+    if (cell.STATE.END) {
+      this.b.ctx.fillStyle = '#fc0a'; // '#fafa';
     }
     
     if (cell.STATE.ACTIVE) {
@@ -228,8 +232,6 @@ Maze.prototype.MAKE_WALLS = function() {
   this.edges['300-150'].WALLIFY();
   this.edges['300-250'].WALLIFY();
   
- 
-  
   this.edges['400-150'].WALLIFY();
   this.edges['400-250'].WALLIFY();
   
@@ -245,6 +247,24 @@ Maze.prototype.MAKE_WALLS = function() {
   this.edges['250-400'].WALLIFY();
   this.edges['350-400'].WALLIFY();
   this.edges['400-350'].WALLIFY();
+  
+  this.edges['200-450'].WALLIFY();
+  this.edges['200-550'].WALLIFY();
+  this.edges['150-600'].WALLIFY();
+  
+  this.edges['100-450'].WALLIFY();
+  this.edges['100-550'].WALLIFY();
+  
+  
+  this.edges['300-650'].WALLIFY();
+  this.edges['400-650'].WALLIFY();
+  this.edges['400-550'].WALLIFY();
+  
+  this.edges['600-450'].WALLIFY();
+  this.edges['650-600'].WALLIFY();
+  
+  this.edges['550-600'].WALLIFY();
+  this.edges['500-550'].WALLIFY(); 
 }
 
 Maze.prototype.GET_CELL_NEIGHBORS = function() {
@@ -306,6 +326,10 @@ Maze.prototype.ANALYZE_NEIGHBORS = function() {
   // IF THERE ARE 0 OR 1 MOVES REMAINING, THE CELL DIES
   this.n_possible_moves = 0;
   this.possible_moves = [];
+  
+  this.n_visited_cells = 0;
+  this.visited_cells = [];
+  
   this.n_unvisited_cells = 0;
   this.unvisited_cells = [];
   
@@ -343,6 +367,9 @@ Maze.prototype.ANALYZE_NEIGHBORS = function() {
     if (!cell.STATE.VISITED) {
       this.n_unvisited_cells++;
       this.unvisited_cells.push(cell);
+    } else {
+      this.n_visited_cells++;
+      this.visited_cells.push(cell);
     }
 
   }; // CLOSING FOR LOOP FOR CELL
@@ -403,13 +430,27 @@ Maze.prototype.ANALYZE_NEIGHBORS = function() {
       this.NEXT = cell0;
     }
 
-    // 2.2 : BOTH VISITED : KILL CURRENT AND RETURN THE WAY WE CAME !
-
+    // 2.2 : BOTH VISITED : KILL CURRENT CELL ** MORE COMPLEX than i thot
+    // MAYBE RETURN THE WAY WE CAME !
+    // IF WE JUST KILLED A CELL, AND HAVE 2 REMAINING, ITS POSSIBLE THAT RETURNING THE WAY WE CAME MEANS GOING TO A DEAD CELL
+    
     if (cell0.STATE.VISITED && cell1.STATE.VISITED) {
       console.log(this.ANIMATION.FRAME_COUNT + ' : @2.2 : BOTH POSSIBILITIES ALREADY VISITED');
-      console.log('KILL THE CURRENT CELL. RETURN THE WAY WE CAME');
-      this.CURRENT.STATE.DEAD = true;
-      this.NEXT = this.PREVIOUS;  
+      
+      
+      if (!this.PREVIOUS.STATE.DEAD) { 
+        console.log('KILL THE CURRENT CELL. RETURN THE WAY WE CAME');
+        this.CURRENT.STATE.DEAD = true;
+        this.NEXT = this.PREVIOUS; 
+      }
+      
+      if (this.PREVIOUS.STATE.DEAD) { 
+        console.log('KILL THE CURRENT CELL, BUT THE WAY WE CAME IS DEAD');
+        this.CURRENT.STATE.DEAD = true;
+        this.NEXT = this.visited_cells[0]; 
+      }
+      
+      
     }
     
   } // CLOSING 2 POSSIBLE MOVES
@@ -447,13 +488,25 @@ Maze.prototype.ANALYZE_NEIGHBORS = function() {
       this.NEXT =  this.unvisited_cells[0];   
     }
     
-    // 3.3 : ALL 3 ARE VISITED (BLUE) : KILL CURRENT AND RETURN THE WAY WE CAME !
+    // 3.3 : ALL 3 ARE VISITED (BLUE) : KILL CURRENT 
+    
+    // RETURN THE WAY WE CAME : PAS FORCEMENT
     
     if (this.n_unvisited_cells === 0) {
       console.log(this.ANIMATION.FRAME_COUNT + ' : @3.3 : ALL 3 ALREADY VISITED');
-      console.log('KILL THE CURRENT CELL. RETURN THE WAY WE CAME');
-      this.CURRENT.STATE.DEAD = true;
-      this.NEXT = this.PREVIOUS; 
+      console.log('KILL THE CURRENT CELL.')
+      //      RETURN THE WAY WE CAME');
+      // IT DEPENDS, ONLY IF THE PREVIOUS CELL ISN'T NOW DEAD
+      
+      // IF THE PREVIOUS CELL IS NOW DEAD, WE NEED TO PICK RANDOMLY FROM THE CELLS THAT REMAIN
+      
+      // *****
+      
+      if (!this.PREVIOUS.STATE.DEAD) {
+        this.CURRENT.STATE.DEAD = true;
+        this.NEXT = this.PREVIOUS; 
+      } 
+      
     } 
     
   } // CLOSING 3 POSSIBILITIES IF STATEMENT
