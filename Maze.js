@@ -230,6 +230,8 @@ Maze.prototype.CREATE_EDGES = function() {
         
         if (interior) {
           this.interior_edges.push(this.edges[y + '-' + x]);
+        } else {
+          this.edges[y + '-' + x].isWall = false;
         }
         
         this.n_edges2++;
@@ -256,6 +258,8 @@ Maze.prototype.CREATE_EDGES = function() {
         
         if (interior) {
           this.interior_edges.push(this.edges[y + '-' + x]);
+        } else {
+          this.edges[y + '-' + x].isWall = false;
         }
         
         this.n_edges2++;
