@@ -171,16 +171,28 @@ Maze.prototype.CREATE_CELLS = function() {
       this.n_cells2++;
     }
   }
- 
-  // initialize
-  this.CURRENT = this.cells['50-50'];
-  this.CURRENT.ACTIVATE();
- 
-  // last cell
-  let row = this.n_rows*100-50;
-  let col = this.n_cols*100-50;
-  this.cells[row + '-' + col].STATE.END = true;
 
+}
+
+Maze.prototype.INITIALIZE = function() {
+  
+  // FIRST CELL
+  let y0 = Math.floor(Math.random()*this.n_rows)*100+50;
+  let x0 = Math.floor(Math.random()*this.n_cols)*100+50;
+  this.CURRENT = this.cells[y0 + '-' + x0];
+  this.CURRENT.ACTIVATE();
+
+
+  // LAST CELL
+  let y1 = y0;
+  let x1 = x0;
+  
+  while (y0 === y1 && x0 === x1) {
+    y1 = Math.floor(Math.random()*this.n_rows)*100+50;
+    x1 = Math.floor(Math.random()*this.n_cols)*100+50;
+  }
+  this.cells[y1 + '-' + x0].STATE.END = true;
+  
 }
 
 // CREATE CORNERS : @mxn, n_cells = (m+1)*(n+1)
