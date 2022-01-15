@@ -132,10 +132,28 @@ window.onload = function() {
   step_into_button = document.getElementById('step_into_button');
   step_into_button.addEventListener('click', function() {
     
-    maze.MOVE_TO_NEW_ACTIVE_CELL();
-    maze.ANALYZE_NEIGHBORS(); // if done, returns nothing
-    maze.SHOW_ANALYSIS();
-    maze.REDRAW();
+    if (maze.CURRENT.STATE.END) {
+      console.log(Math.random());
+      
+      maze.RESET_MAZE();
+      maze.INITIALIZE();
+      
+      maze.ANALYZE_NEIGHBORS();
+      maze.SHOW_ANALYSIS();
+      maze.REDRAW();
+      
+    } else {
+
+      maze.MOVE_TO_NEW_ACTIVE_CELL();
+      
+      maze.ANALYZE_NEIGHBORS();
+      maze.SHOW_ANALYSIS();
+      maze.REDRAW();
+    }
+
+    
+    
+    
   });
 
 } // CLOSING window.onload

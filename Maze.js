@@ -74,12 +74,13 @@ Maze.prototype.INITIALIZE_INFOBOX = function() {
 
 Maze.prototype.REDRAW = function() {
   this.b.CLEAR_CANVAS();
+  console.log('REDRAW');
  
   // DRAW THE CELLS
   Object.keys(this.cells).forEach(function(a) {
 
     let cell = this.cells[a];
-    this.b.ctx.fillStyle = '#5c55'; // '#fc0a';
+    this.b.ctx.fillStyle = '#5c55'; // GREEN;
     
 
     
@@ -89,7 +90,7 @@ Maze.prototype.REDRAW = function() {
     
     
     if (cell.STATE.VISITED) {
-      this.b.ctx.fillStyle = '#b3e0ff';
+      this.b.ctx.fillStyle = '#b3e0ff'; // LIGHT BLUE
     }
     
     if (cell.STATE.DEAD) {
@@ -150,6 +151,8 @@ Maze.prototype.REDRAW = function() {
 // CREATE CELLS : @mxn, n_cells = m*n
 Maze.prototype.CREATE_CELLS = function() {
 
+  this.cells = {};
+  
   for (let y = 50; y < this.n_rows*100; y += 100) {  
     for (let x = 50; x < this.n_cols*100; x += 100) {
  
@@ -176,6 +179,8 @@ Maze.prototype.CREATE_CELLS = function() {
 
 Maze.prototype.INITIALIZE = function() {
   
+  console.log('INITIALIZE : START');
+  
   // FIRST CELL
   let y0 = Math.floor(Math.random()*this.n_rows)*100+50;
   let x0 = Math.floor(Math.random()*this.n_cols)*100+50;
@@ -191,12 +196,36 @@ Maze.prototype.INITIALIZE = function() {
     y1 = Math.floor(Math.random()*this.n_rows)*100+50;
     x1 = Math.floor(Math.random()*this.n_cols)*100+50;
   }
-  this.cells[y1 + '-' + x0].STATE.END = true;
+  this.cells[y1 + '-' + x1].STATE.END = true;
   
+  console.log('INITIALIZE : DONE');
+}
+
+Maze.prototype.RESET_MAZE = function() {
+
+  console.log('RESET_MAZE : START');
+
+  this.PREVIOUS = null;
+  this.CURRENT = null;
+  this.NEXT = null;
+
+  Object.keys(this.cells).forEach(function(a) {
+    let cell = this.cells[a];
+    cell.STATE.ACTIVE = false;
+    cell.STATE.IS_NEXT_ACTIVE = false;
+    cell.STATE.DEAD = false;
+    cell.STATE.VISITED = false;
+    cell.STATE.END = false;
+  }.bind(this));
+  
+  
+  console.log('RESET_MAZE : DONE');
 }
 
 // CREATE CORNERS : @mxn, n_cells = (m+1)*(n+1)
 Maze.prototype.CREATE_CORNERS = function() {
+
+  this.corners = {};
 
   for (let y = 0; y < (this.n_rows + 1)*100; y += 100) {  
     for (let x = 0; x < (this.n_cols + 1)*100; x += 100) {
@@ -217,6 +246,9 @@ Maze.prototype.CREATE_CORNERS = function() {
 // CREATE EDGES : @mxn, n_edges = (n+1)*m + n*(m+1)
 Maze.prototype.CREATE_EDGES = function() {
 
+  this.edges = {};
+  this.interior_edges = [];
+  
   let shift;
   for (let y = 0; y < (this.n_rows + 0.5)*100; y += 50) {  
   
@@ -280,24 +312,12 @@ Maze.prototype.CREATE_EDGES = function() {
   }
 }
 
-Maze.prototype.GET_EDGE_CELLS = function() {
-
-  
-
-}
-
 Maze.prototype.MAKE_WALLS = function() { 
 
-  // for (let i = 0; i < this.interior_edges.length; i++) {
-  
   let everyCellHasTheSameId = false;  
   let n = 0;
-  // while (this.interior_edges.length > 0) {
+  
   while (!everyCellHasTheSameId) {
-      
-      
-      // console.log(n);
-      // n++;
 
       // pick an edge at random
       let x = Math.floor(Math.random()*this.interior_edges.length);
@@ -325,12 +345,7 @@ Maze.prototype.MAKE_WALLS = function() {
             cell.id = id0;
           }
         }.bind(this));
-        
-        
       }
-      
-
-
       
     everyCellHasTheSameId = true;
     Object.keys(this.cells).forEach(function(a) {
@@ -340,73 +355,7 @@ Maze.prototype.MAKE_WALLS = function() {
     }.bind(this));
     
   }
-  
 
-
-  /*
-  Object.keys(this.edges).forEach(function(a) {
-   
-    let edge = this.edges[a];
-    if (edge.isInterior) {
-      edge.isWall = true;
-    } else {
-      edge.isWall = false;
-    }
-   
-  }.bind(this));
-  */
-  
-  /*
-  this.edges['100-50'].WALLIFY();
-  this.edges['100-150'].WALLIFY();
-  this.edges['50-300'].WALLIFY();
-  
-  this.edges['200-50'].WALLIFY();
-  this.edges['150-300'].WALLIFY();
-  this.edges['200-250'].WALLIFY();
-  
-  this.edges['300-50'].WALLIFY();
-  this.edges['300-150'].WALLIFY();
-  this.edges['300-250'].WALLIFY();
-  
-  this.edges['400-150'].WALLIFY();
-  this.edges['400-250'].WALLIFY();
-  
-  this.edges['500-50'].WALLIFY();
-  this.edges['650-100'].WALLIFY();
-  
-  this.edges['550-200'].WALLIFY();
-  
-  this.edges['650-300'].WALLIFY();
-  this.edges['550-300'].WALLIFY();
-  this.edges['450-300'].WALLIFY();
-  
-  this.edges['250-400'].WALLIFY();
-  this.edges['350-400'].WALLIFY();
-  this.edges['400-350'].WALLIFY();
-  
-  this.edges['200-450'].WALLIFY();
-  this.edges['200-550'].WALLIFY();
-  this.edges['150-600'].WALLIFY();
-  
-  this.edges['100-450'].WALLIFY();
-  this.edges['100-550'].WALLIFY();
-  
-  
-  this.edges['300-650'].WALLIFY();
-  this.edges['400-650'].WALLIFY();
-  this.edges['400-550'].WALLIFY();
-  
-  this.edges['600-450'].WALLIFY();
-  this.edges['650-600'].WALLIFY();
-  
-  this.edges['550-600'].WALLIFY();
-  this.edges['500-550'].WALLIFY();
-  
-  // this.edges['600-550'].WALLIFY();
- 
-  */
-  
 }
 
 Maze.prototype.GET_CELL_NEIGHBORS = function() {
@@ -452,6 +401,7 @@ Maze.prototype.GET_CELL_NEIGHBORS = function() {
 Maze.prototype.ANALYZE_NEIGHBORS = function() {
 
   if (this.CURRENT.STATE.END) {
+    console.log('ANALYZE_NEIGHBORS : DONE');
     return;
   }
 /*
@@ -683,6 +633,9 @@ Maze.prototype.ANALYZE_NEIGHBORS = function() {
 
 Maze.prototype.SHOW_ANALYSIS = function() {
   
+  
+  
+  
   let arr = ['NORTH', 'EAST', 'SOUTH', 'WEST'];
   
   for (let i = 0; i < arr.length; i++) {
@@ -846,6 +799,14 @@ Maze.prototype.MOVE_TO_NEW_ACTIVE_CELL = function() {
     console.log('.........................');
     console.log(' > FRAME COUNT : ' + this.ANIMATION.FRAME_COUNT);
     console.log(this.ANIMATION.FRAME_COUNT + ' : @DONE');
+    console.log('MOVE_TO_NEW_ACTIVE_CELL : DONE');
+    
+    /*
+    this.RESET_MAZE();
+    this.INITIALIZE();
+    */
+    
+    
     return;
   }
 

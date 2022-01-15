@@ -1,6 +1,7 @@
 
 // a global
-let maze = new Maze(7, 7);
+let n = 5;
+let maze = new Maze(n, n);
 
 maze.CREATE_CELLS();
 maze.INITIALIZE();
