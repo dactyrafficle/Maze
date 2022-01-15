@@ -7,6 +7,7 @@ function Maze(n_rows, n_cols) {
   this.cells = {};
   this.corners = {};
   this.edges = {};
+  this.interior_edges = [];
  
   this.n_cells = this.n_rows * this.n_cols;
   this.n_corners = (this.n_rows + 1) * (this.n_cols + 1);
@@ -16,6 +17,7 @@ function Maze(n_rows, n_cols) {
   this.n_cells2 = null;   // this.n_rows * this.n_cols
   this.n_corners2 = null; // (this.n_rows + 1) * (this.n_cols + 1);
   this.n_edges2 = null;   // (this.n_cols + 1) * this.n_rows + this.n_cols * (this.n_rows + 1)
+  this.n_edges3 = null;   // interior edges
  
   this.PREVIOUS = null;
   this.CURRENT = null;
@@ -104,6 +106,18 @@ Maze.prototype.REDRAW = function() {
     
     this.b.POINT(cell);
     
+    
+    let pixel = this.b.VAL2PIXEL({
+      'x':cell.cx,
+      'y':cell.cy
+    });
+    
+    /*
+    this.b.ctx.strokeStyle = '#333';
+    this.b.ctx.fillStyle = '#333';
+    this.b.ctx.fillText(cell.id, pixel.x, pixel.y);
+    */
+    
   }.bind(this));
 
 
@@ -124,10 +138,11 @@ Maze.prototype.REDRAW = function() {
       // this.b.POINT(edge);
     }
 
+    
     this.b.CONNECT_POINTS({
       'vals':[edge.corners[0].val, edge.corners[1].val]
     });
-
+    
   }.bind(this));
 
 }
@@ -141,6 +156,7 @@ Maze.prototype.CREATE_CELLS = function() {
       this.cells[y + '-' + x] = {};
       this.cells[y + '-' + x] = new Cell({
        
+        'id':y*this.n_cols + x,
         'cx':x,
         'cy':y,
         'STATE':{
@@ -191,35 +207,140 @@ Maze.prototype.CREATE_EDGES = function() {
 
   let shift;
   for (let y = 0; y < (this.n_rows + 0.5)*100; y += 50) {  
-   
+  
     if ((y % 100) === 0) {
+      
       shift = 50;
-      for (let x = shift; x < (this.n_cols + 0.5)*100; x += 100) {
+      
+      for (let x = shift; x < (this.n_cols + 0.5)*100; x += 100) {   
+
+        let interior = true;
+        if (y === 0 || y === this.n_rows*100) {
+          interior = false;
+        }
+        
         this.edges[y + '-' + x] = {};
         this.edges[y + '-' + x] = new Edge({
           'cx':x,
           'cy':y,
-          'corners':[this.corners[y + '-' + (x-50)], this.corners[y + '-' + (x+50)]]
+          'corners':[this.corners[y + '-' + (x-50)], this.corners[y + '-' + (x+50)]],
+          'isInterior':interior,
+          'cells':[this.cells[(y + 50) + '-' + x], this.cells[(y - 50) + '-' + x]]
         });
-       
+        
+        if (interior) {
+          this.interior_edges.push(this.edges[y + '-' + x]);
+        }
+        
         this.n_edges2++;
       }    
     } else {
+      
       shift = 0;
+      
       for (let x = shift; x < (this.n_cols + 0.5)*100; x += 100) {
+        
+        let interior = true;
+        if (x === 0 || x === this.n_cols*100) {
+          interior = false;
+        }
+        
         this.edges[y + '-' + x] = {};
         this.edges[y + '-' + x] = new Edge({
           'cx':x,
           'cy':y,
-          'corners':[this.corners[(y-50) + '-' + x], this.corners[(y+50) + '-' + x]]
+          'corners':[this.corners[(y-50) + '-' + x], this.corners[(y+50) + '-' + x]],
+          'isInterior':interior,
+          'cells':[this.cells[y + '-' + (x + 50)], this.cells[y + '-' + (x - 50)]]
         });
-       
+        
+        if (interior) {
+          this.interior_edges.push(this.edges[y + '-' + x]);
+        }
+        
         this.n_edges2++;
       }
     }
   }
 }
-Maze.prototype.MAKE_WALLS = function() {
+
+Maze.prototype.GET_EDGE_CELLS = function() {
+
+  
+
+}
+
+Maze.prototype.MAKE_WALLS = function() { 
+
+  // for (let i = 0; i < this.interior_edges.length; i++) {
+  
+  let everyCellHasTheSameId = false;  
+  let n = 0;
+  // while (this.interior_edges.length > 0) {
+  while (!everyCellHasTheSameId) {
+      
+      
+      // console.log(n);
+      // n++;
+
+      // pick an edge at random
+      let x = Math.floor(Math.random()*this.interior_edges.length);
+      let edge = this.interior_edges[x];
+      
+      let c0 = edge.cells[0];
+      let c1 = edge.cells[1];
+      
+      let id0 = c0.id;
+      let id1 = c1.id;
+    
+      // IF THEY HAVE DIFFERENT IDS
+      if (id0 !== id1) {
+        
+        // DELETE THE EDGE
+        this.interior_edges.splice(x,1);
+        
+        // REMOVE ITS WALL
+        edge.isWall = false;
+        
+        // ASSIGN EVERY CELL WITH THEIR IDS THE SAME ID, ID0
+        Object.keys(this.cells).forEach(function(a) {
+          let cell = this.cells[a];
+          if (cell.id === id0 || cell.id === id1) {
+            cell.id = id0;
+          }
+        }.bind(this));
+        
+        
+      }
+      
+
+
+      
+    everyCellHasTheSameId = true;
+    Object.keys(this.cells).forEach(function(a) {
+      if (this.cells[a].id !== this.cells['50-50'].id) {
+        everyCellHasTheSameId = false;
+      }
+    }.bind(this));
+    
+  }
+  
+
+
+  /*
+  Object.keys(this.edges).forEach(function(a) {
+   
+    let edge = this.edges[a];
+    if (edge.isInterior) {
+      edge.isWall = true;
+    } else {
+      edge.isWall = false;
+    }
+   
+  }.bind(this));
+  */
+  
+  /*
   this.edges['100-50'].WALLIFY();
   this.edges['100-150'].WALLIFY();
   this.edges['50-300'].WALLIFY();
@@ -264,7 +385,12 @@ Maze.prototype.MAKE_WALLS = function() {
   this.edges['650-600'].WALLIFY();
   
   this.edges['550-600'].WALLIFY();
-  this.edges['500-550'].WALLIFY(); 
+  this.edges['500-550'].WALLIFY();
+  
+  // this.edges['600-550'].WALLIFY();
+ 
+  */
+  
 }
 
 Maze.prototype.GET_CELL_NEIGHBORS = function() {

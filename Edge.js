@@ -11,8 +11,12 @@ function Edge(obj) {
     'y':obj.cy
   }
   
+  
   this.corners = obj.corners;
-  this.isWall = false;
+  this.isWall = true;
+  
+  this.isInterior = obj.isInterior;
+  this.cells = obj.cells;
 }
 
 

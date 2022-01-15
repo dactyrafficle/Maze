@@ -2,6 +2,9 @@
 // IDK
 function Cell(obj) {
 
+  this.id = obj.id;
+  this.linked = false;
+
   this.cx = obj.cx;
   this.cy = obj.cy;
 
