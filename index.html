@@ -8,6 +8,9 @@
 </head>
 <body>
  
+ 
+<!--
+ 
   <div class='box'>
     <div class='box'>
      
@@ -16,12 +19,14 @@
       <button id='pause_button'>PAUSE</button>
       -->
       
+      <!--
+      
       <button id='step_into_button'>STEP INTO</button>
       
       <div class='status'>
         <div id='pause_status' class='green'>LIVE</div>
       </div>
-  
+      -->
   
   <!--
         <table class='mytables'>
@@ -62,12 +67,15 @@
               <div id='active_cell_x'>0</div>
            </td>
           </tr>
-      </table> -->
+      </table> 
      
       <div id='infobox_container'></div>
      
     </div>
   </div>
+  
+-->
+
   <div class='box'>
     <div id='container'></div>
   </div>
@@ -96,15 +104,12 @@
 
 let container;
 
- /*
 let TIMER_FPS;
-let FRAME_COUNT = 0;
+let FRAME_COUNT = 4;
 let FRAME_INTERVAL = 1000;
 let PAUSE = false;
 let ANIMATION;
-*/
 
-// infobox globals
 
 let reset_button, pause_button;
 let pause_status;
@@ -116,36 +121,67 @@ let active_cell_y, active_cell_x;
 let step_into_button;
 let infobox_container;
 
+
 window.onload = function() {
 
   container = document.getElementById('container');
   container.appendChild(maze.c);
   
   infobox_container = document.getElementById('infobox_container');
-  infobox_container.appendChild(maze.INITIALIZE_INFOBOX());
+  // infobox_container.appendChild(maze.INITIALIZE_INFOBOX());
   
   maze.ANALYZE_NEIGHBORS(); // if done, returns nothing
-  maze.SHOW_ANALYSIS();
+  // maze.SHOW_ANALYSIS();
   maze.REDRAW();
 
+
+  ANIMATION = window.setInterval(function() {
+   
+    if (maze.CURRENT.STATE.END) {
+  
+      console.log(Math.random());
+      
+      n++;
+      if (n >= 12) {
+        n = 4;
+      }
+
+      maze.RESET_MAZE2(n, n);
+      maze.CREATE_CELLS();
+      maze.INITIALIZE();
+
+      maze.CREATE_CORNERS();
+      maze.CREATE_EDGES();
+
+      maze.MAKE_WALLS();
+      maze.GET_CELL_NEIGHBORS();
+      
+      
+      maze.ANALYZE_NEIGHBORS(); // if done, returns nothing
+      // maze.SHOW_ANALYSIS();
+      maze.REDRAW();
+      
+    } else {
+
+      maze.MOVE_TO_NEW_ACTIVE_CELL();
+      
+      maze.ANALYZE_NEIGHBORS();
+      // maze.SHOW_ANALYSIS();
+      maze.REDRAW();
+    }
+    
+
+  }, 1000/4);  // CLOSING animation
+
+
+  /*
   // STEP INTO
   step_into_button = document.getElementById('step_into_button');
   step_into_button.addEventListener('click', function() {
     
     if (maze.CURRENT.STATE.END) {
-    
-    
+  
       console.log(Math.random());
-      /*
-      maze.MAKE_WALLS();
-      
-      maze.RESET_MAZE();
-      maze.INITIALIZE();
-      
-      maze.ANALYZE_NEIGHBORS();
-      maze.SHOW_ANALYSIS();
-      maze.REDRAW();
-      */
       
       n++;
       if (n >= 12) {
@@ -167,9 +203,6 @@ window.onload = function() {
       maze.SHOW_ANALYSIS();
       maze.REDRAW();
       
-      
-
-
     } else {
 
       maze.MOVE_TO_NEW_ACTIVE_CELL();
@@ -178,11 +211,8 @@ window.onload = function() {
       maze.SHOW_ANALYSIS();
       maze.REDRAW();
     }
-
-    
-    
-    
-  });
+  }); // CLOSING STEP INTO
+  */
 
 } // CLOSING window.onload
 
@@ -304,26 +334,6 @@ window.onload = function() {
     console.log(FRAME_COUNT);
   }, FRAME_INTERVAL*8);  // CLOSING animation
  
-    */                                    
-                                     
-
- 
-
-function DRAW_IT(b, maze) {
-
-
-
-  // DRAW THE CORNERS
-  Object.keys(maze.corners).forEach(function(a) {
-    b.POINT(maze.corners[a]);
-  });
-
-  // DRAW THE EDGES
-
- 
-
-
-}
- 
+*/
 
 </script>
