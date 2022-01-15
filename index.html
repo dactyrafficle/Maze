@@ -133,7 +133,11 @@ window.onload = function() {
   step_into_button.addEventListener('click', function() {
     
     if (maze.CURRENT.STATE.END) {
+    
+    
       console.log(Math.random());
+      /*
+      maze.MAKE_WALLS();
       
       maze.RESET_MAZE();
       maze.INITIALIZE();
@@ -141,7 +145,31 @@ window.onload = function() {
       maze.ANALYZE_NEIGHBORS();
       maze.SHOW_ANALYSIS();
       maze.REDRAW();
+      */
       
+      n++;
+      if (n >= 12) {
+        n = 4;
+      }
+
+      maze.RESET_MAZE2(n, n);
+      maze.CREATE_CELLS();
+      maze.INITIALIZE();
+
+      maze.CREATE_CORNERS();
+      maze.CREATE_EDGES();
+
+      maze.MAKE_WALLS();
+      maze.GET_CELL_NEIGHBORS();
+      
+      
+      maze.ANALYZE_NEIGHBORS(); // if done, returns nothing
+      maze.SHOW_ANALYSIS();
+      maze.REDRAW();
+      
+      
+
+
     } else {
 
       maze.MOVE_TO_NEW_ACTIVE_CELL();
