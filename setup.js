@@ -1,10 +1,12 @@
 
 // a global
-let n = 4;
-let maze = new Maze(n, n);
+let n = 24;
+let maze = new Maze();
 
+maze.INITIALIZE_MAZE(n, n);
 maze.CREATE_CELLS();
-maze.INITIALIZE();
+maze.INITIALIZE_CELLS();
+
 maze.CREATE_CORNERS();
 maze.CREATE_EDGES();
 

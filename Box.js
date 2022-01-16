@@ -542,7 +542,7 @@ Box.prototype.POINT = function(obj) {
 
   let pixel = this.VAL2PIXEL(obj.val);
   this.ctx.beginPath();
-  this.ctx.arc(pixel.x, pixel.y, 5, 0, 2*Math.PI);
+  this.ctx.arc(pixel.x, pixel.y, 3, 0, 2*Math.PI);
   this.ctx.fill();
 }
 Box.prototype.SQUARE = function(obj) {

@@ -1,42 +1,14 @@
 
-function Maze(n_rows, n_cols) {
-
-  this.n_rows = n_rows;
-  this.n_cols = n_cols;
- 
-  this.cells = {};
-  this.corners = {};
-  this.edges = {};
-  this.interior_edges = [];
- 
-  this.n_cells = this.n_rows * this.n_cols;
-  this.n_corners = (this.n_rows + 1) * (this.n_cols + 1);
-  this.n_edges = (this.n_cols + 1) * this.n_rows + this.n_cols * (this.n_rows + 1)
-
-  // VERIFICATION
-  this.n_cells2 = null;   // this.n_rows * this.n_cols
-  this.n_corners2 = null; // (this.n_rows + 1) * (this.n_cols + 1);
-  this.n_edges2 = null;   // (this.n_cols + 1) * this.n_rows + this.n_cols * (this.n_rows + 1)
-  this.n_edges3 = null;   // interior edges
- 
-  this.PREVIOUS = null;
-  this.CURRENT = null;
-  this.NEXT = null;
-
-  // THE ANIMATION
+function Maze() {
+  
+  // THESE DO NOT GET RESET
   this.b = new Box();
-  this.b.CANVAS_SIZE(500, 500);                      // THIS IS THE NO OF PIXELS
-  this.b.RANGE_X(-100, (this.n_cols + 1)*100);       // SET THE RANGE IN X
-  this.b.RANGE_Y(-100, (this.n_rows + 1)*100);       // SET THE RANGE IN Y
+  this.b.CANVAS_SIZE(600, 600);   // THIS IS THE NO OF PIXELS
   this.c = this.b.returnCanvas();
-
-  this.ANIMATION = {};
-  this.ANIMATION.FRAME_COUNT = 0;
  
 }
 
-
-Maze.prototype.RESET_MAZE2 = function(n_rows, n_cols) {
+Maze.prototype.INITIALIZE_MAZE = function(n_rows, n_cols) {
 
   this.n_rows = n_rows;
   this.n_cols = n_cols;
@@ -60,16 +32,12 @@ Maze.prototype.RESET_MAZE2 = function(n_rows, n_cols) {
   this.CURRENT = null;
   this.NEXT = null;
 
-  // THE ANIMATION
-  // this.b = new Box();
-  // this.b.CANVAS_SIZE(500, 500);                      // THIS IS THE NO OF PIXELS
+  // THE ANIMATION         
   this.b.RANGE_X(-100, (this.n_cols + 1)*100);       // SET THE RANGE IN X
   this.b.RANGE_Y(-100, (this.n_rows + 1)*100);       // SET THE RANGE IN Y
-  // this.c = this.b.returnCanvas();
 
-  // this.ANIMATION = {};
+  this.ANIMATION = {};
   this.ANIMATION.FRAME_COUNT = 0;
- 
 }
 
 Maze.prototype.INITIALIZE_INFOBOX = function() {
@@ -116,12 +84,9 @@ Maze.prototype.REDRAW = function() {
     let cell = this.cells[a];
     this.b.ctx.fillStyle = '#5c55'; // GREEN;
 
-    if (cell.STATE.IS_NEXT_ACTIVE) {
-      // this.b.ctx.fillStyle = '#b3e0ff';
-    }
-
-    if (cell.STATE.VISITED) {
+    if (cell.STATE.VISITED && !cell.STATE.DEAD) {
       this.b.ctx.fillStyle = '#b3e0ff'; // LIGHT BLUE
+      this.b.POINT(cell);
     }
     
     if (cell.STATE.DEAD) {
@@ -129,29 +94,16 @@ Maze.prototype.REDRAW = function() {
     }
     
     if (cell.STATE.END) {
-      this.b.ctx.fillStyle = '#fc0a'; // '#fafa';
+      this.b.ctx.fillStyle = '#fc0a'; // ORANGE
+      this.b.POINT(cell);
     }
     
     if (cell.STATE.ACTIVE) {
       this.b.ctx.fillStyle = '#7094db';
+      this.b.POINT(cell);
     }
     
-    this.b.POINT(cell);
-    
-    
-    let pixel = this.b.VAL2PIXEL({
-      'x':cell.cx,
-      'y':cell.cy
-    });
-    
-    /*
-    this.b.ctx.strokeStyle = '#333';
-    this.b.ctx.fillStyle = '#333';
-    this.b.ctx.fillText(cell.id, pixel.x, pixel.y);
-    */
-    
   }.bind(this));
-
 
   // DRAW THE EDGES
   Object.keys(this.edges).forEach(function(a) {
@@ -165,12 +117,8 @@ Maze.prototype.REDRAW = function() {
 
       this.b.ctx.strokeStyle = '#3c3c';
       this.b.ctx.lineWidth = 4;
-    } else {
+    } else {}
 
-      // this.b.POINT(edge);
-    }
-
-    
     this.b.CONNECT_POINTS({
       'vals':[edge.corners[0].val, edge.corners[1].val]
     });
@@ -208,10 +156,8 @@ Maze.prototype.CREATE_CELLS = function() {
 
 }
 
-Maze.prototype.INITIALIZE = function() {
-  
-  // console.log('INITIALIZE : START');
-  
+Maze.prototype.INITIALIZE_CELLS = function() {
+
   // FIRST CELL
   let y0 = Math.floor(Math.random()*this.n_rows)*100+50;
   let x0 = Math.floor(Math.random()*this.n_cols)*100+50;
@@ -228,29 +174,9 @@ Maze.prototype.INITIALIZE = function() {
     x1 = Math.floor(Math.random()*this.n_cols)*100+50;
   }
   this.cells[y1 + '-' + x1].STATE.END = true;
-  
-  // console.log('INITIALIZE : DONE');
+ 
 }
 
-Maze.prototype.RESET_MAZE = function() {
-
-  // console.log('RESET_MAZE : START');
-
-  this.PREVIOUS = null;
-  this.CURRENT = null;
-  this.NEXT = null;
-
-  Object.keys(this.cells).forEach(function(a) {
-    let cell = this.cells[a];
-    cell.STATE.ACTIVE = false;
-    cell.STATE.IS_NEXT_ACTIVE = false;
-    cell.STATE.DEAD = false;
-    cell.STATE.VISITED = false;
-    cell.STATE.END = false;
-  }.bind(this));
-
-  // console.log('RESET_MAZE : DONE');
-}
 
 // CREATE CORNERS : @mxn, n_cells = (m+1)*(n+1)
 Maze.prototype.CREATE_CORNERS = function() {
@@ -344,25 +270,6 @@ Maze.prototype.CREATE_EDGES = function() {
 
 Maze.prototype.MAKE_WALLS = function() { 
 
-
-  // this.interior_edges = [];
-  
-  /*
-  Object.keys(this.edges).forEach(function(a) {
-    let edge = this.edges[a];
-    if (edge.isInterior) {
-      edge.isWall = true;
-      this.interior_edges.push(edge);
-    }
-  }.bind(this));
-  */
-  
-  
-
-
-
-
-
   let everyCellHasTheSameId = false;  
   let n = 0;
   
@@ -450,7 +357,7 @@ Maze.prototype.GET_CELL_NEIGHBORS = function() {
 Maze.prototype.ANALYZE_NEIGHBORS = function() {
 
   if (this.CURRENT.STATE.END) {
-    console.log('ANALYZE_NEIGHBORS : DONE');
+    // console.log('ANALYZE_NEIGHBORS : DONE');
     return;
   }
 /*
@@ -474,8 +381,8 @@ Maze.prototype.ANALYZE_NEIGHBORS = function() {
   this.n_unvisited_cells = 0;
   this.unvisited_cells = [];
   
-  console.log('.........................');
-  console.log(' > FRAME COUNT : ' + this.ANIMATION.FRAME_COUNT);
+  // console.log('.........................');
+  // console.log(' > FRAME COUNT : ' + this.ANIMATION.FRAME_COUNT);
 
   // PART ONE : SEE WHAT CELLS ARE PHYSICALLY POSSIBLE (NO WALLS)
 
@@ -516,8 +423,8 @@ Maze.prototype.ANALYZE_NEIGHBORS = function() {
   }; // CLOSING FOR LOOP FOR CELL
   
   // PRINT SOME RESULTS
-  console.log(' > POSSIBLE MOVES : ' + this.n_possible_moves);
-  console.log(' > UNVISITED CELLS : ' + this.n_unvisited_cells);
+  // console.log(' > POSSIBLE MOVES : ' + this.n_possible_moves);
+  // console.log(' > UNVISITED CELLS : ' + this.n_unvisited_cells);
   
 
   // IF THERE ARE 0 POSSIBLE MOVES, WE STOP
@@ -845,11 +752,12 @@ Maze.prototype.MOVE_TO_NEW_ACTIVE_CELL = function() {
   this.CURRENT.ACTIVATE();
   
   if (this.CURRENT.STATE.END) {
+    /*
     console.log('.........................');
     console.log(' > FRAME COUNT : ' + this.ANIMATION.FRAME_COUNT);
     console.log(this.ANIMATION.FRAME_COUNT + ' : @DONE');
     console.log('MOVE_TO_NEW_ACTIVE_CELL : DONE');
-    
+    */
     /*
     this.RESET_MAZE();
     this.INITIALIZE();
