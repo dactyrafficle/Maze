@@ -6,80 +6,11 @@
   <link rel="stylesheet" type="text/css" href="a.css">
   <link rel="icon" href="a.png">
 </head>
+
 <body>
- 
- 
-<!--
- 
-  <div class='box'>
-    <div class='box'>
-     
-     <!--
-      <button id='reset_button'>RESET</button>
-      <button id='pause_button'>PAUSE</button>
-      -->
-      
-      <!--
-      
-      <button id='step_into_button'>STEP INTO</button>
-      
-      <div class='status'>
-        <div id='pause_status' class='green'>LIVE</div>
-      </div>
-      -->
-  
-  <!--
-        <table class='mytables'>
-          <tr>
-            <td><div>-00.00</div></td>
-            <td><div>-00.00</div></td>
-          </tr>
-          <tr>
-            <td><div>y</div></td>
-            <td><div>x</div></td>
-          </tr>
-          <tr>
-            <td><div id='y_coordinate'>00.00</div></td>
-            <td><div id='x_coordinate'>00.00</div></td>
-          </tr>
-
-          <tr><td colspan=2></td></tr>
-          <tr><td colspan=2>frame count</td></tr>
-          <tr><td colspan=2><div id='frame_count'>0</div></td></tr>
-
-          <tr><td colspan=2></td></tr>
-          <tr>
-            <td><div>fps</div></td>
-            <td><input id='frames_per_second' type='number' min=0 max=30 step=1 /></td>
-          </tr>
-
-          <tr><td colspan=2></td></tr>
-          <tr><td colspan=2>active cell</td></tr>
-          <tr>
-            <td><div>y</div></td>
-            <td><div>x</div></td>
-          </tr>
-          <tr>
-            <td>
-              <div id='active_cell_y'>0</div>
-            </td>
-            <td>
-              <div id='active_cell_x'>0</div>
-           </td>
-          </tr>
-      </table> 
-     
-      <div id='infobox_container'></div>
-     
-    </div>
-  </div>
-  
--->
-
   <div class='box'>
     <div id='container'></div>
   </div>
-
 </body>
 
  
@@ -102,8 +33,6 @@
 let container;
 let ANIMATION;
 
- 
-
 window.onload = function() {
 
   container = document.getElementById('container');
@@ -119,7 +48,7 @@ window.onload = function() {
       console.log(Math.random());
       
       n++;
-      if (n >= 32) {
+      if (n >= 24) {
         n = 4;
       }
 
